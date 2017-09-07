@@ -38,6 +38,8 @@
   "dependencies": {
     "aframe": "^0.6.1",
     "aframe-react": "^4.3.0",
+    "glsl-easings": "^1.0.0",
+    "jquery": "^3.2.1",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",

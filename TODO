@@ -1,1 +1,7 @@
 http://dev.weareglow.com/syfy_hunters/#/episode/6
+
+//
+
+NORMAL: 1
+LOADING: 2
+SHOOT: -2 + random

@@ -1,4 +1,5 @@
 import AFRAME from 'aframe'
+import $ from "jquery"
 
 const points_vert = require('raw-loader!./shaders/points.vert');
 const points_frag = require('raw-loader!./shaders/points.frag');
@@ -8,6 +9,7 @@ const points_frag = require('raw-loader!./shaders/points.frag');
 var renderer, scene, camera;
 var points, material;
 var pointer;
+var mouseDown;
 
 var raycaster, mouse
 var intersects = [];
@@ -58,6 +60,8 @@ function init() {
   material = new THREE.ShaderMaterial({
     uniforms: {
       radius: { value: 0.0 },
+      expand: { value: 0.0 },
+      explode: { value: 0.0 },
       intersect: { value: new THREE.Vector3( 0, 0, 0 ) }
     },
     vertexShader: points_vert,
@@ -97,7 +101,40 @@ function init() {
 
   window.addEventListener( 'resize', onWindowResize, false );
   document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+  document.addEventListener( 'mouseup', onMouseUp, false );
 
+  mouseDown = 0;
+  document.body.onmousedown = function() {
+      mouseDown = 1;
+  }
+  document.body.onmouseup = function() {
+      mouseDown = 0;
+  }
+}
+
+function onMouseUp() {
+  if ( material.uniforms.expand.value === 1 ) {
+    // UP
+    $({animValue: 0}).animate({animValue: 1}, {
+      duration: 250,
+      complete: function() {
+        onAnimComplete();
+      },
+      step: function() {
+        material.uniforms.explode.value = this.animValue;
+      }
+    });
+
+    // DOWN
+    function onAnimComplete() {
+      $({animValue: 1}).animate({animValue: 0}, {
+        duration: 1000,
+        step: function() {
+          material.uniforms.explode.value = this.animValue;
+        }
+      });
+    }
+  }
 }
 
 function onDocumentMouseMove( event ) {
@@ -132,8 +169,13 @@ function render() {
     unif.intersect.value = intersect.point;
 
     pointer.position.copy( intersect.point );
-    pointer.material.opacity += 0.05;
+    pointer.material.opacity += 0.1;
     pointer.material.opacity = Math.clip(pointer.material.opacity, 0.0, 1.0);
+
+    if ( mouseDown ) {
+      unif.expand.value += 0.075;
+      unif.expand.value = Math.clip(unif.expand.value, 0.0, 1.0);
+    }
 
   } else if ( intersect === null ) {
 
@@ -142,6 +184,11 @@ function render() {
 
     pointer.material.opacity -= 0.05;
     pointer.material.opacity = Math.clip(pointer.material.opacity, 0.0, 1.0);
+  }
+
+  if ( !mouseDown ) {
+    unif.expand.value -= 0.075;
+    unif.expand.value = Math.clip(unif.expand.value, 0.0, 1.0);
   }
 
   renderer.render( scene, camera );
